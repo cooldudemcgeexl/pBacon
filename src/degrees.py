@@ -2,10 +2,9 @@ import time
 
 import numba.typed
 import pandas as pd
-from numba import jit
+from numba import jit, typed, types
 
-movies = {}
-actors = {}
+
 def benchmark(func):
     """Custom benchmark decorator"""
     iterations = 1000
@@ -23,28 +22,27 @@ def benchmark(func):
         return ret_val
     return inner
 
-def read_casts():
-    casts = pd.read_csv('casts.csv')
+def read_casts(casts_array):
 
-    casts = casts.loc[casts['actor'].str.len() > 5]
 
-    for index, row in casts.iterrows():
-        actor = row['actor']
-        movie = row['movie'][2:]
-        if actor not in movies:
-            movies[actor] = []
-        if movie not in actors:
-            actors[movie] = []
-        
-        movies[actor].append(movie)
-        actors[movie].append(actor)
-
+    actors = dict()
+    movies = dict()
+    for row in casts_array:
+        actor = row[2]
+        movie = row[1][2:]
+        if actor not in actors:
+            actors[actor] = [movie] 
+        else:
+            actors[actor].append(movie)
+        if movie not in movies:
+            movies[movie] = [actor]   
+        else:
+            movies[movie].append(actor)
     
     return movies, actors
 
 @benchmark
-@jit(nopython=True)
-def get_neighbors(parent_actor):
+def get_neighbors(parent_actor, actors, movies):
     neighbors = set()
     for movie in movies[parent_actor]:
         for actor in actors[movie]:
@@ -53,10 +51,15 @@ def get_neighbors(parent_actor):
     return neighbors
 
 
+def read_casts_csv():
+    casts = pd.read_csv('casts.csv')
+    casts = casts.loc[casts['actor'].str.len() > 5]
+    return casts.to_numpy()
 
 def main():
-    actors, movies = read_casts()
-    print(get_neighbors('Barbra Streisand'))
+    casts_ndarray= read_casts_csv()
+    actors, movies = read_casts(casts_ndarray)
+    print(get_neighbors('Barbra Streisand', actors, movies))
 
 
 if __name__ == "__main__":

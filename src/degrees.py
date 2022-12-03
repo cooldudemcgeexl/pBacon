@@ -1,5 +1,4 @@
 import time
-
 import numba.typed
 import pandas as pd
 from numba import jit, typed, types
@@ -23,8 +22,6 @@ def benchmark(func):
     return inner
 
 def read_casts(casts_array):
-
-
     actors = dict()
     movies = dict()
     for row in casts_array:
@@ -41,6 +38,7 @@ def read_casts(casts_array):
     
     return movies, actors
 
+
 @benchmark
 def get_neighbors(parent_actor, actors, movies):
     neighbors = set()
@@ -55,6 +53,7 @@ def read_casts_csv():
     casts = pd.read_csv('casts.csv')
     casts = casts.loc[casts['actor'].str.len() > 5]
     return casts.to_numpy()
+
 
 def main():
     casts_ndarray= read_casts_csv()

@@ -1,25 +1,9 @@
-import time
-import numba.typed
+
+
 import pandas as pd
-from numba import jit, typed, types
 
+from .benchmark import benchmark
 
-def benchmark(func):
-    """Custom benchmark decorator"""
-    iterations = 1000
-    def inner(*args, **kwargs):
-        elapsed = []
-        for i in range(iterations):
-            start = time.time()
-            ret_val = func(*args,**kwargs)
-            end = time.time()
-            elapsed.append(end - start)
-
-        avg_time = sum(elapsed)/len(elapsed)
-
-        print(f'{func.__name__} {iterations} iterations:  Avg Elapsed = {avg_time}')  
-        return ret_val
-    return inner
 
 def read_casts(casts_array):
     actors = dict()
@@ -39,7 +23,7 @@ def read_casts(casts_array):
     return movies, actors
 
 
-@benchmark
+@benchmark()
 def get_neighbors(parent_actor, actors, movies):
     neighbors = set()
     for movie in movies[parent_actor]:
@@ -47,7 +31,6 @@ def get_neighbors(parent_actor, actors, movies):
             if actor != parent_actor:
                 neighbors.add(actor)
     return neighbors
-
 
 def read_casts_csv():
     casts = pd.read_csv('casts.csv')
